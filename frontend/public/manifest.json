@@ -1,0 +1,28 @@
+{
+  "short_name": "Altos Connect",
+  "name": "Altos Connect - A WhatsApp Marketing Tool",
+  "description": "Elevate your business marketing with Altos Connect! Seamlessly connect with your audience, streamline communication, and unlock new possibilities for growth on WhatsApp.",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff",
+  "lang": "en",
+  "dir": "ltr"
+}

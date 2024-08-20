@@ -152,6 +152,10 @@ def upload_credentials(request):
                 ]
                 credentials.app_id = serializer.validated_data["app_id"]
                 credentials.save()
+                
+                print(2233)
+                print(credentials)
+                print(4444)
 
             except WhatsappCredential.DoesNotExist:
                 user = CustomUser.objects.get(id=user_id)

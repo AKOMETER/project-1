@@ -131,14 +131,16 @@ def validate_access_token(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def upload_credentials(request):
+    # print(122)
     if request.method == "POST":
+       
         serializer = CredentialsSerializer(data=request.data)
         if serializer.is_valid():
             user_id = serializer.validated_data["user_id"]
 
             try:
                 credentials = WhatsappCredential.objects.get(user_id=user_id)
-                # print(credentials)
+                
                 user = CustomUser.objects.get(id=user_id)
 
                 credentials.whatsapp_business_id = serializer.validated_data[
@@ -152,10 +154,7 @@ def upload_credentials(request):
                 ]
                 credentials.app_id = serializer.validated_data["app_id"]
                 credentials.save()
-                
-                print(2233)
-                print(credentials)
-                print(4444)
+               
 
             except WhatsappCredential.DoesNotExist:
                 user = CustomUser.objects.get(id=user_id)
@@ -168,6 +167,9 @@ def upload_credentials(request):
                     ],
                     permanent_access_token=serializer.validated_data[
                         "permanent_access_token"
+                    ],
+                    app_id=serializer.validated_data[
+                        "app_id"
                     ],
                 )
 
@@ -1362,7 +1364,12 @@ def send_whatsapp_model_bulk_messages_images(request):
 def get_templates_message(request):
     user_id = request.GET.get("user_id")
     get_credential = get_credentials(user_id)
-    business_id = get_credential[0]["whatsapp_business_id"]
+    if get_credential is not None and len(get_credential) > 0:
+        business_id = get_credential[0]["whatsapp_business_id"]
+    else:
+        pass
+
+    # business_id = get_credential[0]["whatsapp_business_id"]
     bearer_token = get_credential[0]["permanent_access_token"]
     template_instances = Template.objects.filter(user__id=user_id)
 

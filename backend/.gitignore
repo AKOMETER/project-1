@@ -1,0 +1,63 @@
+# Python
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+*.env
+*.venv
+venv/
+ENV/
+env.bak/
+env/
+*.egg-info/
+dist/
+build/
+*.log
+
+# Django
+*.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+local_settings.py
+
+# Environment variables
+.env
+.env.*
+
+# Pytest
+.cache
+
+# IDEs and editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# macOS
+.DS_Store
+
+# Others
+*.bak
+*.swp
+
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+venv/
+
+# Django specific
+*.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+
+# Environment variables
+.env
+.env.*
+
+# Node specific
+node_modules/

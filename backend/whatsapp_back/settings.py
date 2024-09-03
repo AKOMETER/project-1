@@ -113,7 +113,7 @@ DATABASES = {
         "ENGINE": "mysql.connector.django",
         "NAME": "altos",
         "USER": "root",
-        "PASSWORD": "root",
+        "PASSWORD": "",
         "HOST": "localhost",
         "PORT": "3306",
         "OPTIONS": {

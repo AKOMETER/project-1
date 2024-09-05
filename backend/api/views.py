@@ -1164,6 +1164,23 @@ def send_whatsapp_bulk_messages_images(request):
         return JsonResponse({"error": str(e)}, status=500)
 
 
+from celery.result import AsyncResult
+from django.http import JsonResponse
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])  # Apply this if you want to restrict access
+def get_task_status(request, task_id):
+    try:
+        task = AsyncResult(task_id)
+        response = {
+            "task_id": task_id,
+            "task_status": task.status,
+            "task_result": task.result if task.successful() else None,
+        }
+        return JsonResponse(response)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
 # send bulk messages from addded names from database
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])

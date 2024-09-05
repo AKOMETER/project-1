@@ -180,27 +180,26 @@ def send_message_to_facebook_array(
     image_link_get,
     template_format,
 ):
-    print("five")
+
     def process_number(
-        value,
+        raw_number,
         template_name,
         template_format,
         phone_number_id,
         bearer_token,
+        image_link_get,
         results,
     ):
-        print("six")
-        raw_number = str(value).replace(" ", "")
+        # Sanitize the phone number
+        print("Processing number:", raw_number)
+        raw_number = str(raw_number).replace(" ", "")
         if raw_number and (raw_number.startswith("91")) and (len(raw_number) == 12):
             raw_number = "+" + raw_number
         elif raw_number and raw_number.startswith("0"):
             raw_number = "+91" + raw_number[1:]
-        # print(raw_number)
-       
-        print(raw_number)
+
         if raw_number:
-            # with transaction.atomic():
-            # PhoneNumber.objects.get_or_create(number=raw_number, user_id=user_id)
+            # Prepare the payload for WhatsApp API
 
             data = {
                 "messaging_product": "whatsapp",
@@ -210,73 +209,78 @@ def send_message_to_facebook_array(
                 "template": {
                     "name": template_name,
                     "language": {"code": "en"},
-                    **(
-                        {
-                            "components": [
-                                {
-                                    "type": "header",
-                                    "parameters": [
-                                        {
-                                            "type": template_format,
-                                            template_format: {
-                                                "link": image_link_get,
-                                                **(
-                                                    {"filename": f"{template_name}.pdf"}
-                                                    if template_format == "document"
-                                                    else {}
-                                                ),
-                                            },
-                                        }
-                                    ],
-                                }
-                            ],
-                        }
-                        if template_format != "text"
-                        else {}
-                    ),
+                    "components": [],
                 },
             }
-            url = f"https://graph.facebook.com/v18.0/{phone_number_id}/messages"
-            headers = {
-                "Authorization": "Bearer " + bearer_token,
-                "Content-Type": "application/json",
-            }
 
-            try:
-                response = requests.post(url, headers=headers, json=data)
-                response_data = response.json()
-                results.append(response_data)
-                # print(results)
-            except json.JSONDecodeError:
-                print("JSON Decode Error")
+            if template_format != "text":
+                data["template"]["components"].append(
+                    {
+                        "type": "header",
+                        "parameters": [
+                            {
+                                "type": template_format,
+                                template_format: {
+                                    "link": image_link_get,
+                                    **(
+                                        {"filename": f"{template_name}.pdf"}
+                                        if template_format == "document"
+                                        else {}
+                                    ),
+                                },
+                            }
+                        ],
+                    }
+                )
+            else:
+                data["template"]["components"].append(
+                    {
+                        "type": "header",
+                        "parameters": [
+                            {
+                                "type": "text",
+                                "text": "Your header text parameter here",  # Replace with actual parameter value
+                            }
+                        ],
+                    }
+                )
+        print(f"Data to be sent: {data}")
+        url = f"https://graph.facebook.com/v18.0/{phone_number_id}/messages"
+        headers = {
+            "Authorization": "Bearer " + bearer_token,
+            "Content-Type": "application/json",
+        }
 
+        try:
+            # Send the POST request
+            response = requests.post(url, headers=headers, json=data)
+            response_data = response.json()
+            results.append(response_data)
+            print(f"Response for {raw_number}: {response_data}")
+        except requests.RequestException as req_err:
+            print(f"Request error for {raw_number}: {req_err}")
+        except json.JSONDecodeError:
+            print(f"JSON Decode Error for {raw_number}")
+
+    # Task execution logic
     try:
-        # logger.info("Excel Data: %s", excel)
         results = []
-        threads = []
 
-        for value in numbers:
-            thread = threading.Thread(
-                target=process_number,
-                args=(
-                    value,
-                    user_id,
-                    template_name,
-                    template_format,
-                    phone_number_id,
-                    bearer_token,
-                    results,
-                ),
+        # Process each number in the list
+        for number in numbers:
+            process_number(
+                number,
+                template_name,
+                template_format,
+                phone_number_id,
+                bearer_token,
+                image_link_get,
+                results,
             )
-            threads.append(thread)
-            thread.start()
-
-        for thread in threads:
-            thread.join()
 
         return results
     except Exception as e:
-        logger.exception("An error occurred in send_message_to_facebook task: %s", e)
+        print(f"An error occurred: {e}")
         raise e
 
 

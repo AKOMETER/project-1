@@ -187,6 +187,7 @@ class WhatsAppBulkMessageSerializer(serializers.Serializer):
 
 
 class WhatsAppBulkMessageImageSerializer(serializers.Serializer):
+    
     numbers = serializers.ListField(child=serializers.CharField(max_length=20))
     template_name = serializers.CharField()
     image_link = serializers.CharField()

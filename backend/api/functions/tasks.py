@@ -180,22 +180,24 @@ def send_message_to_facebook_array(
     image_link_get,
     template_format,
 ):
+    print("five")
     def process_number(
         value,
-        user_id,
         template_name,
         template_format,
         phone_number_id,
         bearer_token,
         results,
     ):
+        print("six")
         raw_number = str(value).replace(" ", "")
         if raw_number and (raw_number.startswith("91")) and (len(raw_number) == 12):
             raw_number = "+" + raw_number
         elif raw_number and raw_number.startswith("0"):
             raw_number = "+91" + raw_number[1:]
         # print(raw_number)
-
+       
+        print(raw_number)
         if raw_number:
             # with transaction.atomic():
             # PhoneNumber.objects.get_or_create(number=raw_number, user_id=user_id)

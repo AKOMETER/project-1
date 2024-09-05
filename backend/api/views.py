@@ -1131,7 +1131,6 @@ def send_whatsapp_bulk_messages_images(request):
     template_format = request.GET.get("template_format")
     try:
         serializer = WhatsAppBulkMessageImageSerializer(data=request.data)
-
         if serializer.is_valid():
             template_name = serializer.validated_data.get("template_name")
             numbers = serializer.validated_data.get("numbers")
@@ -1140,7 +1139,6 @@ def send_whatsapp_bulk_messages_images(request):
             get_credential = get_credentials(user_id)
             phone_number_id = get_credential[0]["phone_number_id"]
             bearer_token = get_credential[0]["permanent_access_token"]
-
             try:
                 # Send message to Celery task
                 task = send_message_to_facebook_array.delay(
@@ -1152,9 +1150,10 @@ def send_whatsapp_bulk_messages_images(request):
                     image_link,
                     template_format,
                 )
+                # Return the task ID, which is serializable
                 return JsonResponse({"task_id": task.id}, status=202)
             except Exception as e:
-                return HttpResponse(f"Failed to send messages: {str(e)}", status=500)
+                return JsonResponse({"error": str(e)}, status=500)
 
         else:
             return JsonResponse(serializer.errors, status=400)
@@ -1169,6 +1168,7 @@ def send_whatsapp_bulk_messages_images(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def send_whatsapp_model_bulk_messages(request):
+    
     try:
         template_name = request.GET.get("template_name")
         user_id = request.GET.get("user_id")

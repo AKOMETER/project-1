@@ -41,7 +41,7 @@ urlpatterns = [
         views.send_whatsapp_bulk_messages_images,
         name="send_whatsapp_bulk_messages_images",
     ),
-    path('task-status/<str:task_id>/', views.get_task_status, name='get_task_status'),
+    path("task-status/<str:task_id>/", views.get_task_status, name="get_task_status"),
     path(
         "sent-messages/data/",
         views.send_whatsapp_model_bulk_messages,

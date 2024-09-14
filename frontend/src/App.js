@@ -25,9 +25,10 @@ import Blog from "./Blog/Blog";
 import AdminBlog from "./Admin/AdminBlog";
 import BlogCreate from "./Blog/BlogCreate";
 import BlogPage from "./Blog/BlogPage";
-import TemplateAnalytics from "./Message/TemplateAnalytics";
+import TemplateAnalytics from "./Message/Analysis/TemplateAnalytics";
 import Contacts from "./Contacts/Contacts";
 import { DataProvider } from "./Context/TemplatesApi";
+import Options from "./Message/Analysis/Options";
 // import MyEditor from "./Blog/MyEditor";
 
 // import Loading from "./Loading/Loading";
@@ -82,6 +83,7 @@ function App() {
                 path="/template/analytics"
                 element={<TemplateAnalytics />}
               />
+              <Route path="/template/analytics/options" element={<Options />} />
               <Route path="/manage" element={<Manage />} />
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/users" element={<Users />} />

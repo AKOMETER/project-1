@@ -29,7 +29,7 @@ export default function Options() {
             <div className="py-2 inline-block min-w-full sm:px-6 lg:px-8">
               <div className="overflow-hidden shadow-md sm:rounded-lg">
                 <table className="min-w-full">
-                  <thead className="bg-gray-50 dark:bg-gray-700">
+                  <thead className="bg-green-900">
                     <tr>
                       <th
                         scope="col"
@@ -61,7 +61,7 @@ export default function Options() {
                     {data.map((item) => (
                       <tr
                         key={item.id}
-                        className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
+                        className="bg-white border-b  dark:border-gray-700"
                       >
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                           {item.id}

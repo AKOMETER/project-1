@@ -9,7 +9,7 @@ import requests, json
 import threading
 from django.db import transaction
 from openpyxl import load_workbook
-
+from django.http import JsonResponse
 logger = logging.getLogger(__name__)
 
 
@@ -343,36 +343,52 @@ def send_message_to_facebook_custom(
 ):
     def process_number(message, value, phone_number_id, bearer_token, results):
         raw_number = str(value).replace(" ", "")
-        if raw_number and (raw_number.startswith("91")) and (len(raw_number) == 12):
+        if raw_number and raw_number.startswith("91") and len(raw_number) == 12:
             raw_number = "+" + raw_number
         elif raw_number and raw_number.startswith("0"):
             raw_number = "+91" + raw_number[1:]
-        # print(raw_number)
 
-        if raw_number:
-            data = {
-                "messaging_product": "whatsapp",
-                "recipient_type": "individual",
-                "to": raw_number,
-                "type": "text",
-                "text": {"preview_url": True, "body": message},
-            }
-            url = f"https://graph.facebook.com/v18.0/{phone_number_id}/messages"
-            headers = {
-                "Authorization": "Bearer " + bearer_token,
-                "Content-Type": "application/json",
-            }
+        # Build the base message data
+        data = {
+            "messaging_product": "whatsapp",
+            "recipient_type": "individual",
+            "to": raw_number,
+        }
 
-            try:
-                response = requests.post(url, headers=headers, json=data)
-                response_data = response.json()
-                results.append(response_data)
-                print(response_data)
-            except json.JSONDecodeError:
-                print("JSON Decode Error")
+        # Adjust the message structure based on template_format
+        if template_format == "text":
+            data["type"] = "text"
+            data["text"] = {"preview_url": True, "body": message}
+        elif template_format == "image":
+            data["type"] = "image"
+            data["image"] = {"link": media_url}
+        elif template_format == "video":
+            data["type"] = "video"
+            data["video"] = {"link": media_url}
+        elif template_format == "document":
+            data["type"] = "document"
+            data["document"] = {"link": media_url}
+        elif template_format == "custom":
+            # Add custom handling logic here based on your needs
+            data["type"] = "custom"
+            # custom data goes here, if applicable
+            pass
+
+        url = f"https://graph.facebook.com/v18.0/{phone_number_id}/messages"
+        headers = {
+            "Authorization": "Bearer " + bearer_token,
+            "Content-Type": "application/json",
+        }
+
+        try:
+            response = requests.post(url, headers=headers, json=data)
+            response_data = response.json()
+            results.append(response_data)
+            print(response_data)
+        except json.JSONDecodeError:
+            print("JSON Decode Error")
 
     try:
-        # logger.info("Excel Data: %s", excel)
         results = []
         threads = []
 
@@ -411,3 +427,4 @@ def send_email(email, password):
     message.attach_alternative(html_message, "text/html")
     message.send()
     # return None
+

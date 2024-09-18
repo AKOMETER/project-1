@@ -2736,3 +2736,44 @@ def custom_message_view(request):
         )
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET"])
+def get_template_usage_from_facebook(request, template, status):
+    # Validate status input
+    valid_statuses = ['sent', 'delivered', 'read']
+    if status not in valid_statuses:
+        return JsonResponse({"error": "Invalid status provided"}, status=400)
+
+    # Construct the Graph API request URL
+    url = f"https://graph.facebook.com/v18.0/{template}/messages"
+
+    # Setup headers including bearer token for authentication
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {bearer_token}",
+    }
+  
+
+    try:
+        # Make the request to the Facebook Graph API
+        response = requests.get(url, headers=headers)
+        response_data = response.json()
+        print(response_data)
+        # Check if the response is valid and contains data
+        if response.status_code == 200 and "data" in response_data:
+            results = []
+            # Loop through the messages and filter based on the provided status
+            for message in response_data.get('data', []):
+                if message['status'] == status:
+                    results.append({
+                        'phone_number': message['to'],
+                        'date_used': message['timestamp']  # Adjust this to actual date field in the response
+                    })
+
+            # Return the filtered results
+            return JsonResponse({"template": template, "status": status, "logs": results}, status=200)
+        else:
+            return JsonResponse({"error": "No data found or invalid template ID"}, status=404)
+    except requests.RequestException as e:
+        return JsonResponse({"error": str(e)}, status=500)

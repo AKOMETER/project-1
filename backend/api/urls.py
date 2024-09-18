@@ -59,6 +59,9 @@ urlpatterns = [
         views.get_templates_analytics,
         name="get_templates_analytics",
     ),
+    path('template-usage/<str:template>/<str:status>/', 
+    views.get_template_usage_from_facebook, 
+    name='template-usage'),
     path(
         "post_template/text",
         views.create_text_template,

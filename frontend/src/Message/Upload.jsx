@@ -11,9 +11,10 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { BsCheckLg } from "react-icons/bs";
 import useTemplateApi from "../Context/TemplatesApi";
+import * as XLSX from "xlsx";
 
 function Upload() {
-  const [excelfile, setexcelfile] = useState(null);
+  const [excelfile, setexcelfile] = useState([]);
   const [fileName, setFileName] = useState("");
   const [uploadbox, setUploadbox] = useState("excelm");
   const [templateData, setTemplateData] = useState();
@@ -35,10 +36,25 @@ function Upload() {
 
   const ft = Cookies.get("ft");
 
-  const handleFileChange = (event) => {
-    const selectedFile = event.target.files[0];
-    setexcelfile(selectedFile);
-    event.target.value = null;
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+
+    setFileName(file.name);
+
+    reader.onload = (event) => {
+      const data = new Uint8Array(event.target.result);
+      const workbook = XLSX.read(data, { type: "array" });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+      // Extract numbers from the Excel sheet and flatten the array
+      const extractedNumbers = jsonData.flat().filter(Number);
+      setexcelfile(extractedNumbers);
+    };
+
+    reader.readAsArrayBuffer(file);
   };
 
   const headers = {
@@ -50,13 +66,15 @@ function Upload() {
     Authorization: "Bearer " + accessToken,
   };
 
-  useEffect(() => {
-    if (excelfile) {
-      setFileName(excelfile.name);
-    } else {
-      setFileName("");
-    }
-  }, [excelfile]);
+  const toastOptions = {
+    position: "top-right",
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+  };
 
   const handleSubmitExcelUpload = async (event) => {
     event.preventDefault();
@@ -91,41 +109,43 @@ function Upload() {
     setTemplateData(data.data);
   }, [data]);
 
+  function addPlusSign(numbers) {
+    return numbers.map((number) => `+${number}`);
+  }
   const handleSubmitExcelSent = async (event) => {
     event.preventDefault();
 
-    if (!excelfile) {
-      alert("Please select a file to upload.");
+    if (excelfile.length <= 0) {
+      toast.warning("Please select a file to upload.");
       return;
     }
     if (!select) {
-      alert("Please Select a Template for Messaging");
+      toast.warning("Please Select a Template for Messaging");
+      return;
     }
 
-    const formData = new FormData();
-    formData.append("excel_file", excelfile);
-    formData.append("template_name", select);
-    formData.append("user_id", userid);
-    formData.append("image_link", imageurl);
-    setSuccessMessage(true);
+    const postData = {
+      numbers: addPlusSign(excelfile),
+      template_name: select,
+      image_link: imageurl,
+      user_id: userid,
+    };
+
     try {
-      const response = await axios.post(apiurl1, formData, {
-        headers: headers1,
+      const response = await axios.post(apiurl1, postData, {
+        headers: headers,
       });
+      toast.success(`Success ${response.statusText}`, toastOptions);
+      setSuccessMessage(true);
       setTimeout(() => {
         setSuccessMessage(false);
-        setContact(true);
-      }, 2000);
-      // setexcelfile('')
-
-      // setTimeout(() => {
-      //     setSuccessMessage(false);
-      // }, 3000);
-
-      // setSuccessMessage(false)
+      }, 3000);
     } catch (error) {
-      console.error("Error uploading file: ", error);
-      setSuccessMessage(false);
+      console.log(error);
+      if (error.response?.status === 400) {
+        return toast.error(`Error: ${error.response.statusText}`, toastOptions);
+      }
+      toast.error(`Error`, toastOptions);
     }
   };
   const handleSubmitExcelSentPersonalised = async (event) => {
@@ -139,30 +159,31 @@ function Upload() {
       alert("Please Select a Template for Messaging");
     }
 
+    console.log(excelfile);
     const formData = new FormData();
     formData.append("excel_file", excelfile);
     formData.append("template_name", select);
     formData.append("user_id", userid);
     formData.append("image_link", imageurl);
     setSuccessMessage(true);
-    try {
-      const response = await axios.post(apiurl2, formData, {
-        headers: headers1,
-      });
-      setTimeout(() => {
-        setSuccessMessage(false);
-        setContact(true);
-      }, 2000);
-      // setexcelfile(null)
-      // setTimeout(() => {
-      //     setSuccessMessage(false);
-      // }, 3000);
+    // try {
+    //   const response = await axios.post(apiurl2, formData, {
+    //     headers: headers1,
+    //   });
+    //   setTimeout(() => {
+    //     setSuccessMessage(false);
+    //     setContact(true);
+    //   }, 2000);
+    //   // setexcelfile(null)
+    //   // setTimeout(() => {
+    //   //     setSuccessMessage(false);
+    //   // }, 3000);
 
-      // setSuccessMessage(false)
-    } catch (error) {
-      console.error("Error uploading file: ", error);
-      setSuccessMessage(false);
-    }
+    //   // setSuccessMessage(false)
+    // } catch (error) {
+    //   console.error("Error uploading file: ", error);
+    //   setSuccessMessage(false);
+    // }
   };
   const findFormat = (components) => {
     const selectedComponent = components.find(
@@ -207,7 +228,7 @@ function Upload() {
           : "";
 
       setApiurl1(
-        `${config.baseUrl}upload/sent/images?template_format=${findFormat(
+        `${config.baseUrl}sent-messages/images?template_format=${findFormat(
           selectedComponent
         )}`
       );
@@ -319,7 +340,7 @@ function Upload() {
                 className="mt-3 excel-bg-1 bg-white h-36 text-center rounded-xl flex flex-col"
               >
                 {" "}
-                {excelfile ? fileName : ""}
+                {excelfile.length > 0 ? fileName : ""}
                 <input
                   type="file"
                   id="excel-file"
@@ -337,7 +358,7 @@ function Upload() {
                 className="select-none cursor-pointer flex justify-center items-center mt-4 bg-[#064A42] max-w-max text-white py-1 px-2 rounded-lg uppercase font-bold text-xs tracking-widest	"
               >
                 <img className="h-6 object-contain" src={whatsapplogo} alt="" />
-                &nbsp;Send Message now
+                &nbsp;Send Message
               </div>
             </div>
             <div>

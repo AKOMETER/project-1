@@ -180,3 +180,13 @@ class ContactGroup(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class MessageLog(models.Model):
+    template_name = models.CharField(max_length=255)
+    template_id = models.CharField(max_length=255) 
+    phone_number = models.CharField(max_length=15)
+    date_sent = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Message to {self.phone_number} - {self.template_name}"

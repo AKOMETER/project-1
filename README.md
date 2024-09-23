@@ -27,3 +27,14 @@ source venv/bin/activate
  or
  celery -A whatsapp_back worker --loglevel=debug
 ```
+
+# Using Docker
+
+1. make sure you .env files are present
+2. ```bash
+   docker-compose up --build
+   ```
+
+```
+
+```

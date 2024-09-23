@@ -1,49 +1,73 @@
-version: '3'
+version: '3.8'
 
 services:
-  backend:
-    build:
-      context: ./backend
-    command: gunicorn --bind 0.0.0.0:8000 your_django_project_name.wsgi:application
+  # Django Service
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - ./backend:/app
+      - .:/app
     ports:
       - "8000:8000"
+    environment:
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
+      DJANGO_DEBUG: ${DJANGO_DEBUG}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: db
+      DB_PORT: ${DB_PORT}
     depends_on:
+      - db
       - redis
-    environment:
-      - DEBUG=1
-      - DJANGO_ALLOWED_HOSTS=localhost
-      - DB_HOST=db
-      - DB_PORT=3306
-      - DB_NAME=your_db_name
-      - DB_USER=your_db_user
-      - DB_PASSWORD=your_db_password
+    env_file:
+      - .env
 
-  frontend:
-    build:
-      context: ./frontend
-    volumes:
-      - ./frontend:/app
+  # MySQL Database Service
+  db:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "3000:3000"
-    environment:
-      - REACT_APP_BACKEND_URL=http://localhost:8000
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    env_file:
+      - .env
 
+  # Redis Service (for Celery)
   redis:
-    image: redis:alpine
+    image: "redis:alpine"
+    restart: always
     ports:
       - "6379:6379"
 
-  db:
-    image: mysql:8
+  # Celery Service
+  celery:
+    build: .
+    command: celery -A whatsapp_back worker --loglevel=info
     volumes:
-      - db_data:/var/lib/mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: your_root_password
-      MYSQL_DATABASE: your_db_name
-      MYSQL_USER: your_db_user
-      MYSQL_PASSWORD: your_db_password
+      - .:/app
+    depends_on:
+      - redis
+    env_file:
+      - .env
+
+  # Celery Beat Service (for periodic tasks)
+  celery-beat:
+    build: .
+    command: celery -A whatsapp_back beat --loglevel=info
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+    env_file:
+      - ./backend/.env
 
 volumes:
-  db_data:
+  mysql_data:

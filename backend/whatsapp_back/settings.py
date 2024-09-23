@@ -11,25 +11,24 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import timedelta
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-ynr1znbi4l^2(zes)$$rl@*t4bl_0!z2&6(qflc1p43pkux8zo"
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', "django-insecure-ynr1znbi4l^2(zes)$$rl@*t4bl_0!z2&6(qflc1p43pkux8zo")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
 
-# ALLOWED_HOSTS = ["altosconnectweb.com", "altosconnectweb"]
-ALLOWED_HOSTS = ["127.0.0.1", "localhost", "summary-deer-centrally.ngrok-free.app"]
-
+ALLOWED_HOSTS = [
+    os.getenv('DJANGO_ALLOWED_HOSTS', '127.0.0.1 localhost summary-deer-centrally.ngrok-free.app').split()
+]
 
 # Application definition
 
@@ -74,102 +73,54 @@ TEMPLATES = [
     },
 ]
 
-
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOWED_ORIGINS = [
-    "https://altosconnect.com",
-]
-# CORS_ORIGIN_WHITELIST = ("https://altosconnect.com",)
-# CORS_ALLOW_HEADERS = [
-#     "accept",
-#     "accept-encoding",
-#     "authorization",
-#     "content-type",
-#     "dnt",
-#     "origin",
-#     "user-agent",
-#     "x-csrftoken",
-#     "x-requested-with",
-#     "formdata",
-# ]
-
 
 WSGI_APPLICATION = "whatsapp_back.wsgi.application"
 
-
 # Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.sqlite3",
-#         "NAME": BASE_DIR / "db.sqlite3",
-#         "ATOMIC_REQUESTS": True,
-#     }
-# }
+# Using environment variables for database configuration.
 DATABASES = {
     "default": {
         "ENGINE": "mysql.connector.django",
-        "NAME": "altos",
-        "USER": "root",
-        "PASSWORD": "",
-        "HOST": "localhost",
-        "PORT": "3306",
+        "NAME": os.getenv("DB_NAME", "altos"),
+        "USER": os.getenv("DB_USER", "root"),
+        "PASSWORD": os.getenv("DB_PASSWORD", ""),
+        "HOST": os.getenv("DB_HOST", "db"),
+        "PORT": os.getenv("DB_PORT", "3306"),
         "OPTIONS": {
             "autocommit": True,
         },
     }
 }
+
 ATOMIC_REQUESTS = False
 
 # Password validation
-# https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-
 # Internationalization
-# https://docs.djangoproject.com/en/4.2/topics/i18n/
-
 LANGUAGE_CODE = "en-us"
-
 TIME_ZONE = "Asia/Kolkata"
-# TIME_ZONE = "UTC"
-
-
 USE_I18N = True
-
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.2/howto/static-files/
-
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
-# Default primary key field type
-# https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
+# Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-
+# JWT Authentication Settings
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
@@ -184,7 +135,7 @@ SIMPLE_JWT = {
     "JTI_CLAIM": "jti",
 }
 
-
+# Django Rest Framework Settings
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -192,44 +143,22 @@ REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
 }
 
-# REST_FRAMEWORK = {
-#     'DEFAULT_RENDERER_CLASSES': (
-#         'rest_framework.renderers.JSONRenderer',
-#     )
-# }
-
-
+# Authentication Backends
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
 ]
 AUTH_USER_MODEL = "api.CustomUser"
 
+# Email settings (Using Mailtrap)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'sandbox.smtp.mailtrap.io'
-EMAIL_PORT = '587'
-EMAIL_HOST_USER = 'ff7c47388e388c'
-EMAIL_HOST_PASSWORD = '103f7186803b6c'
 EMAIL_PORT = '2525'
+EMAIL_HOST_USER = os.getenv('MAILTRAP_USERNAME', 'ff7c47388e388c')
+EMAIL_HOST_PASSWORD = os.getenv('MAILTRAP_PASSWORD', '103f7186803b6c')
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 
-# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-# EMAIL_HOST = "smtp.gmail.com"
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_USE_SSL = False
-# EMAIL_HOST_USER = "jeevanjose2016@gmail.com"
-# EMAIL_HOST_PASSWORD = "mbmxvoehxunkmvwh"
-
-
-# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-# EMAIL_HOST = "smtp.gmail.com"
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_USE_SSL = False
-# EMAIL_HOST_USER = "altostechnologies6@gmail.com"
-# EMAIL_HOST_PASSWORD = "jkdpqggohjsmhyay"
-
+# Celery Configuration
 CELERY_BROKER_URL = "redis://127.0.0.1:6379"
 CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379"
 CELERY_BROKER_CONNECTION_RETRY = True
@@ -244,7 +173,5 @@ CELERY_TASK_ACKS_LATE = True
 CELERY_TASK_TRACK_STARTED = True
 CELERYD_PREFETCH_MULTIPLIER = 1
 
-
+# Max number of fields to allow uploads
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
-
-# SECURE_SSL_REDIRECT = True

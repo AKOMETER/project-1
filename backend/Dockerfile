@@ -10,7 +10,9 @@ COPY requirements.txt /app/
 
 # Upgrade pip and install dependencies
 RUN pip install --upgrade pip
-RUN pip install --no-cache-dir --timeout=1000 -r requirements.txt
+# RUN pip install --no-cache-dir --timeout=1000 -r requirements.txt
+RUN pip install --timeout=1000 -r requirements.txt --index-url https://pypi.org/simple
+
 
 # Copy the rest of the Django project
 COPY . /app/

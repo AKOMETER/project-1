@@ -26,9 +26,8 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', "django-insecure-ynr1znbi4l^2(zes)$$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = [
-    os.getenv('DJANGO_ALLOWED_HOSTS', '127.0.0.1 localhost summary-deer-centrally.ngrok-free.app').split()
-]
+ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost,summary-deer-centrally.ngrok-free.app').split(',')
+
 
 # Application definition
 
@@ -87,7 +86,7 @@ DATABASES = {
         "USER": os.getenv("DB_USER", "root"),
         "PASSWORD": os.getenv("DB_PASSWORD", ""),
         "HOST": os.getenv("DB_HOST", "db"),
-        "PORT": os.getenv("DB_PORT", "3306"),
+        "PORT": int(os.getenv("DB_PORT", "3306").strip()),  # Strip spaces and cast to int
         "OPTIONS": {
             "autocommit": True,
         },

@@ -30,11 +30,8 @@ source venv/bin/activate
 
 # Using Docker
 
-1. make sure you .env files are present
-2. ```bash
-   docker-compose up --build
-   ```
-
-```
-
-```
+1.  make sure you .env files are present in root and ./backend
+2.  run docker deamon on background (just start the docket app)
+3.  docker pull mysql:5.7
+4.  docker pull redis:alpine
+5.  docker-compose up --build

@@ -1,12 +1,12 @@
 version: '3.8'
 
 services:
-  # Django Service
+  # Django Service (Backend)
   web:
-    build: .
+    build: ./backend
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - .:/app
+      - ./backend:/app
     ports:
       - "8000:8000"
     environment:
@@ -22,7 +22,7 @@ services:
       - db
       - redis
     env_file:
-      - .env
+      - ./backend/.env
 
   # MySQL Database Service
   db:
@@ -38,7 +38,7 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
     env_file:
-      - .env
+      - ./backend/.env
 
   # Redis Service (for Celery)
   redis:
@@ -49,25 +49,38 @@ services:
 
   # Celery Service
   celery:
-    build: .
+    build: ./backend
     command: celery -A whatsapp_back worker --loglevel=info
     volumes:
-      - .:/app
-    depends_on:
-      - redis
-    env_file:
-      - .env
-
-  # Celery Beat Service (for periodic tasks)
-  celery-beat:
-    build: .
-    command: celery -A whatsapp_back beat --loglevel=info
-    volumes:
-      - .:/app
+      - ./backend:/app
     depends_on:
       - redis
     env_file:
       - ./backend/.env
+
+  # Celery Beat Service (for periodic tasks)
+  celery-beat:
+    build: ./backend
+    command: celery -A whatsapp_back beat --loglevel=info
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - redis
+    env_file:
+      - ./backend/.env
+
+  # Frontend Service (React or any other)
+  frontend:
+    build: ./frontend  # Assuming you have a Dockerfile in the 'frontend' folder
+    command: npm start
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "3000:3000"  # Frontend usually runs on port 3000 for React
+    environment:
+      NODE_ENV: development
+    depends_on:
+      - web  # Ensure backend is available before frontend
 
 volumes:
   mysql_data:

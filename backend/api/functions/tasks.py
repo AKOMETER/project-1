@@ -10,8 +10,8 @@ import threading
 from django.db import transaction
 from openpyxl import load_workbook
 from django.http import JsonResponse
-from .models import MessageLog  # Import the MessageLog model
-from datetime import datetime
+# from .models import MessageLog  # Import the MessageLog model
+# from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -263,12 +263,12 @@ def send_message_to_facebook_array(
 
 
              # Log the message to the database
-            MessageLog.objects.create(
-            template_name=template_name,
-            template_id=response_data.get("messages", [{}])[0].get("id", ""),  # Log the message ID
-            phone_number=raw_number,
-            date_sent=timezone.now(),
-            )
+            # MessageLog.objects.create(
+            # template_name=template_name,
+            # template_id=response_data.get("messages", [{}])[0].get("id", ""),  # Log the message ID
+            # phone_number=raw_number,
+            # date_sent=timezone.now(),
+            # )
         except requests.RequestException as req_err:
             print(f"Request error for {raw_number}: {req_err}")
         except json.JSONDecodeError:

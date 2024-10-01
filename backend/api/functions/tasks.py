@@ -180,7 +180,7 @@ def send_message_to_facebook_array(
     user_id,
     phone_number_id,
     bearer_token,
-    image_link_get,
+    media_link_get,
     template_format,
 ):
 
@@ -190,11 +190,11 @@ def send_message_to_facebook_array(
         template_format,
         phone_number_id,
         bearer_token,
-        image_link_get,
+        media_link_get,
         results,
     ):
         # Sanitize the phone number
-        print("Processing number:", raw_number)
+       
         raw_number = str(raw_number).replace(" ", "")
         if raw_number and (raw_number.startswith("91")) and (len(raw_number) == 12):
             raw_number = "+" + raw_number
@@ -203,7 +203,6 @@ def send_message_to_facebook_array(
 
         if raw_number:
             # Prepare the payload for WhatsApp API
-
             data = {
                 "messaging_product": "whatsapp",
                 "recipient_type": "individual",
@@ -212,67 +211,76 @@ def send_message_to_facebook_array(
                 "template": {
                     "name": template_name,
                     "language": {"code": "en"},
-                    "components": [],
                 },
             }
 
+            # Only add components for non-text formats
             if template_format != "text":
-                data["template"]["components"].append(
-                    {
-                        "type": "header",
-                        "parameters": [
-                            {
-                                "type": template_format,
-                                template_format: {
-                                    "link": image_link_get,
-                                    **(
-                                        {"filename": f"{template_name}.pdf"}
-                                        if template_format == "document"
-                                        else {}
-                                    ),
-                                },
-                            }
-                        ],
-                    }
-                )
-            else:
-                data["template"]["components"].append(
-                    {
-                        "type": "header",
-                        "parameters": [
-                            {
-                                "type": "text",
-                                "text": "Your header text parameter here",  # Replace with actual parameter value
-                            }
-                        ],
-                    }
-                )
-        print(f"Data to be sent: {data}")
-        url = f"https://graph.facebook.com/v18.0/{phone_number_id}/messages"
-        headers = {
-            "Authorization": "Bearer " + bearer_token,
-            "Content-Type": "application/json",
-        }
+                if template_format == "document":
+                    data["template"]["components"] = [
+                        {
+                            "type": "header",
+                            "parameters": [
+                                {
+                                    "type": "document",
+                                    "document": {
+                                        "link": media_link_get,
+                                        "filename": f"{template_name}.pdf",
+                                    },
+                                }
+                            ],
+                        }
+                    ]
+                elif template_format == "image":
+                    data["template"]["components"] = [
+                        {
+                            "type": "header",
+                            "parameters": [
+                                {
+                                    "type": "image",
+                                    "image": {
+                                        "link": media_link_get,
+                                    },
+                                }
+                            ],
+                        }
+                    ]
+                elif template_format == "video":
+                    data["template"]["components"] = [
+                        {
+                            "type": "header",
+                            "parameters": [
+                                {
+                                    "type": "video",
+                                    "video": {
+                                        "link": media_link_get,
+                                    },
+                                }
+                            ],
+                        }
+                    ]
 
-        try:
-            # Send the POST request
-            response = requests.post(url, headers=headers, json=data)
-            response_data = response.json()
-            results.append(response_data)
-            print(f"Response for {raw_number}: {response_data}")
+            print("data", data)
 
+            # For text, no components are added (matches platform data format)
+            print(f"Data to be sent: {data}")
+            url = f"https://graph.facebook.com/v18.0/{phone_number_id}/messages"
+            headers = {
+                "Authorization": "Bearer " + bearer_token,
+                "Content-Type": "application/json",
+            }
 
-             # Log the message to the database
-            # MessageLog.objects.create(
-            # template_name=template_name,
-            # template_id=response_data.get("messages", [{}])[0].get("id", ""),  # Log the message ID
-            # phone_number=raw_number,
-            # date_sent=timezone.now(),
-            # )
-        except requests.RequestException as req_err:
-            print(f"Request error for {raw_number}: {req_err}")
-        except json.JSONDecodeError:
-            print(f"JSON Decode Error for {raw_number}")
+            try:
+                # Send the POST request
+                response = requests.post(url, headers=headers, json=data)
+                response_data = response.json()
+                results.append(response_data)
+                print(f"Response for {raw_number}: {response_data}")
+
+            except requests.RequestException as req_err:
+                print(f"Request error for {raw_number}: {req_err}")
+            except json.JSONDecodeError:
+                print(f"JSON Decode Error for {raw_number}")
 
     # Task execution logic
     try:
@@ -286,7 +294,7 @@ def send_message_to_facebook_array(
                 template_format,
                 phone_number_id,
                 bearer_token,
-                image_link_get,
+                media_link_get,
                 results,
             )
 

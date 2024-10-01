@@ -196,10 +196,9 @@ def send_message_to_facebook_array(
         # Sanitize the phone number
        
         raw_number = str(raw_number).replace(" ", "")
-        if raw_number and (raw_number.startswith("91")) and (len(raw_number) == 12):
+
+        if raw_number and not raw_number.startswith("+"):
             raw_number = "+" + raw_number
-        elif raw_number and raw_number.startswith("0"):
-            raw_number = "+91" + raw_number[1:]
 
         if raw_number:
             # Prepare the payload for WhatsApp API
@@ -260,7 +259,11 @@ def send_message_to_facebook_array(
                         }
                     ]
 
-            print("data", data)
+            print("data", {
+             raw_number,
+             template_name,
+             template_format
+            })
 
             # For text, no components are added (matches platform data format)
             print(f"Data to be sent: {data}")

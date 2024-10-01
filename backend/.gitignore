@@ -58,6 +58,7 @@ staticfiles/
 # Environment variables
 .env
 .env.*
+*.pyc
 
 # Node specific
 node_modules/

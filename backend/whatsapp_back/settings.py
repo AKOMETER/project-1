@@ -82,11 +82,11 @@ WSGI_APPLICATION = "whatsapp_back.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "mysql.connector.django",
-        "NAME": os.getenv("DB_NAME", "altos"),
-        "USER": os.getenv("DB_USER", "root"),
-        "PASSWORD": os.getenv("DB_PASSWORD", ""),
-        "HOST": os.getenv("DB_HOST", "db"),
-        "PORT": int(os.getenv("DB_PORT", "3306").strip()),  # Strip spaces and cast to int
+        "NAME":  "altos",
+        "USER": "root",
+        "PASSWORD": "",
+        "HOST": "127.0.0.1",
+        "PORT": "3306",  # Strip spaces and cast to int
         "OPTIONS": {
             "autocommit": True,
         },

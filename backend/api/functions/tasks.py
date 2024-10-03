@@ -10,8 +10,10 @@ import threading
 from django.db import transaction
 from openpyxl import load_workbook
 from django.http import JsonResponse
-# from .models import MessageLog  # Import the MessageLog model
-# from datetime import datetime
+from django.utils import timezone
+from ..models import MessageLog
+import django
+django.setup()
 
 logger = logging.getLogger(__name__)
 
@@ -173,6 +175,7 @@ def send_message_to_facebook_excel_images(
         raise e
 
 
+
 @shared_task
 def send_message_to_facebook_array(
     numbers,
@@ -194,7 +197,6 @@ def send_message_to_facebook_array(
         results,
     ):
         # Sanitize the phone number
-       
         raw_number = str(raw_number).replace(" ", "")
 
         if raw_number and not raw_number.startswith("+"):
@@ -259,14 +261,7 @@ def send_message_to_facebook_array(
                         }
                     ]
 
-            print("data", {
-             raw_number,
-             template_name,
-             template_format
-            })
-
-            # For text, no components are added (matches platform data format)
-            print(f"Data to be sent: {data}")
+            # Send the POST request
             url = f"https://graph.facebook.com/v18.0/{phone_number_id}/messages"
             headers = {
                 "Authorization": "Bearer " + bearer_token,
@@ -274,11 +269,27 @@ def send_message_to_facebook_array(
             }
 
             try:
-                # Send the POST request
                 response = requests.post(url, headers=headers, json=data)
                 response_data = response.json()
                 results.append(response_data)
                 print(f"Response for {raw_number}: {response_data}")
+
+                # Log successful message into the database
+                try:
+                    if "messages" in response_data and response_data["messages"]:
+                        message_id = response_data["messages"][0].get("id")
+                        if message_id:
+                            # Wrap the database operation in a transaction block
+                            with transaction.atomic():
+                                MessageLog.objects.create(
+                                    template_name=template_name,
+                                    template_id=message_id,
+                                    phone_number=raw_number,
+                                    date_sent=timezone.now()
+                                )
+                                print(f"Message log created for {raw_number}")
+                except Exception as db_error:
+                    print(f"Database logging error for {raw_number}: {db_error}")
 
             except requests.RequestException as req_err:
                 print(f"Request error for {raw_number}: {req_err}")
@@ -305,7 +316,6 @@ def send_message_to_facebook_array(
     except Exception as e:
         print(f"An error occurred: {e}")
         raise e
-
 
 @shared_task
 def send_personalized_messages(

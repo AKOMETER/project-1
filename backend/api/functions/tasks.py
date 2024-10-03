@@ -272,15 +272,21 @@ def send_message_to_facebook_array(
                 response = requests.post(url, headers=headers, json=data)
                 response_data = response.json()
                 results.append(response_data)
-                print(f"Response for {raw_number}: {response_data}")
+                print(f"Responses for {raw_number}: {response_data}")
 
                 # Log successful message into the database
+              
                 try:
+                   
                     if "messages" in response_data and response_data["messages"]:
+                       
                         message_id = response_data["messages"][0].get("id")
+                       
                         if message_id:
                             # Wrap the database operation in a transaction block
+                           
                             with transaction.atomic():
+                               
                                 MessageLog.objects.create(
                                     template_name=template_name,
                                     template_id=message_id,

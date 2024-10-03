@@ -27,6 +27,7 @@ function TemplateAnalytics() {
   const accessToken = Cookies.get("accessToken");
   const userid = jwtDecode(accessToken).user_id;
   const [analyticsdata, setAnalyticsdata] = useState();
+  const [selectedOption, setSelectedOption] = useState("");
 
   const [value, setValue] = useState([null, null]);
   const [showWarning, setShowWarning] = useState(false);
@@ -72,7 +73,9 @@ function TemplateAnalytics() {
   }, []);
 
   const handleSelectChange = (e) => {
-    setSelectedTemplate(e.target.value);
+    setSelectedTemplate(e.target.value); // Update selected value
+    const selectedText = e.target.options[e.target.selectedIndex].text;
+    setSelectedOption(selectedText); // Set selected option text
   };
   const handleDateChange = (newValue) => {
     const [start, end] = newValue || [null, null];
@@ -157,7 +160,9 @@ function TemplateAnalytics() {
               <Link
                 to={{
                   pathname: "/template/analytics/options",
-                  search: "?tab=sent",
+                  search: `?tab=sent&template=${selectedOption}&start=${formatDate(
+                    value[0]
+                  )}&end=${formatDate(value[1])}`,
                 }}
               >
                 <div className="bg-white p-4 px-16 flex flex-col items-center justify-between gap-3 rounded-xl pt-16 plan-box w-[300px] ">

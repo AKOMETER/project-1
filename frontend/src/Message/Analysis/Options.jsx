@@ -1,6 +1,9 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import WhatsappModule from "../../WhatsappModule";
 import { useLocation } from "react-router-dom";
+import axios from "axios";
+import config from "../../config";
+import Cookies from "js-cookie";
 
 export default function Options() {
   // Access the location object
@@ -11,13 +14,40 @@ export default function Options() {
 
   // Get the value of the 'tab' query parameter
   const tab = searchParams.get("tab");
+  const template_name = searchParams.get("template");
+  const start = searchParams.get("start");
+  const end = searchParams.get("end");
 
-  const data = [
-    { id: 1, name: "John Doe", date: "12/09/90", number: "+092242423423" },
-    { id: 2, name: "Jane Doe", date: "10/09/10", number: "+09382903323" },
-    { id: 3, name: "Sam Smith", date: "09/9/90", number: "+23442342322" },
-  ];
+  const accessToken = Cookies.get("accessToken");
+  const [data, setData] = useState([]);
 
+  const headers = {
+    "Content-Type": "application/json",
+    Authorization: "Bearer " + accessToken,
+  };
+
+  useEffect(() => {
+    getTemplateData();
+  }, []);
+
+  function getTemplateData() {
+    axios
+      .get(
+        `${config.baseUrl}get_templates_log?template_name=${template_name}&start=${start}&end=${end}`,
+        {
+          headers: headers,
+        }
+      )
+      .then((response) => {
+        const extractedData = response.data;
+
+        // setData(extractedData);
+        console.log(extractedData);
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+      });
+  }
   return (
     <div className=" w-full bg-[#ECE5DD] flex justify-between h-screen  rounded-2xl overflow-x-auto">
       <div className="h-full">
@@ -47,13 +77,13 @@ export default function Options() {
                         scope="col"
                         className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                       >
-                        Date
+                        Phone
                       </th>
                       <th
                         scope="col"
                         className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                       >
-                        List of Number {tab}
+                        Date
                       </th>
                     </tr>
                   </thead>
@@ -67,13 +97,13 @@ export default function Options() {
                           {item.id}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                          {item.name}
+                          {item.template_name}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                          {item.date}
+                          {item.phone_number}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                          {item.number}
+                          {new Date(item.date_sent)}
                         </td>
                       </tr>
                     ))}

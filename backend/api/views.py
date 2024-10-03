@@ -41,6 +41,7 @@ from .models import (
     Notification,
     PlanPurchase,
     ContactGroup,
+    MessageLog
 )
 
 # from openpyxl import load_workbook
@@ -59,7 +60,8 @@ from .functions.tasks import (
 )
 import pandas as pd
 from datetime import datetime
-
+from django.utils.dateparse import parse_date
+from django.db.models import Q
 
 def read_file(file_path):
     file_name = file_path.name
@@ -2777,3 +2779,37 @@ def get_template_usage_from_facebook(request, template, status):
             return JsonResponse({"error": "No data found or invalid template ID"}, status=404)
     except requests.RequestException as e:
         return JsonResponse({"error": str(e)}, status=500)
+
+
+@api_view(["GET"])
+def get_templates_log(request):
+    # Get query parameters from the request
+    template_name = request.GET.get('template_name', '')
+    start_date = request.GET.get('start')
+    end_date = request.GET.get('end')
+
+    # Convert start and end date to proper date objects
+    start_date = parse_date(start_date) if start_date else None
+    end_date = parse_date(end_date) if end_date else None
+
+    # Prepare the filter condition
+    filter_conditions = Q()
+    
+    if template_name:
+        filter_conditions &= Q(template_name=template_name)
+    if start_date and end_date:
+        filter_conditions &= Q(date_sent__date__range=[start_date, end_date])
+    elif start_date:
+        filter_conditions &= Q(date_sent__date__gte=start_date)
+    elif end_date:
+        filter_conditions &= Q(date_sent__date__lte=end_date)
+
+    # Filter the MessageLog based on the conditions
+    message_logs = MessageLog.objects.filter(filter_conditions)
+
+    # Create a list of dictionaries to return as JSON
+    logs_data = list(
+        message_logs.values('template_name', 'template_id', 'phone_number', 'date_sent')
+    )
+
+    return JsonResponse(logs_data, safe=False)

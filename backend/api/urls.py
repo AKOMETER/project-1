@@ -16,6 +16,7 @@ from django.conf.urls import handler404
 # )
 
 urlpatterns = [
+    path('get_log/message', views.get_log, name='get_log_message'),
     path(
         "user-hierarchy/<int:pk>/",
         UserHierarchyView.as_view(),
@@ -26,7 +27,7 @@ urlpatterns = [
         UserChildrenListView.as_view(),
         name="user-children-list",
     ),
-    path('get_templates_log/', get_templates_log, name='get_templates_log'),
+    
     path("update_date/", views.update_register_date, name="update_register_date"),
     path("webhook/", views.whatsapp_webhook, name="whatsapp_webhook"),
     path("phone-numbers/", PhoneNumberList.as_view(), name="phone-number-list"),

@@ -25,29 +25,31 @@ export default function Options() {
     "Content-Type": "application/json",
     Authorization: "Bearer " + accessToken,
   };
-
   useEffect(() => {
     getTemplateData();
   }, []);
 
-  function getTemplateData() {
-    axios
-      .get(
-        `${config.baseUrl}get_templates_log?template_name=${template_name}&start=${start}&end=${end}`,
-        {
-          headers: headers,
-        }
-      )
-      .then((response) => {
-        const extractedData = response.data;
+  async function getTemplateData() {
+    try {
+      axios.defaults.baseURL = config.baseUrl;
 
-        // setData(extractedData);
-        console.log(extractedData);
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
+      const response = await axios({
+        url: "get_log/message",
+        method: "GET",
+        params: {
+          template_name: template_name,
+          // start: start,
+          // end: end,
+        },
+        headers: headers,
       });
+
+      setData(response.data); // Handle success
+    } catch (error) {
+      console.error("Error fetching data:", error); // Handle error
+    }
   }
+
   return (
     <div className=" w-full bg-[#ECE5DD] flex justify-between h-screen  rounded-2xl overflow-x-auto">
       <div className="h-full">
@@ -88,13 +90,13 @@ export default function Options() {
                     </tr>
                   </thead>
                   <tbody>
-                    {data.map((item) => (
+                    {data.map((item, index) => (
                       <tr
-                        key={item.id}
+                        key={index}
                         className="bg-white border-b  dark:border-gray-700"
                       >
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                          {item.id}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-400">
+                          {index}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                           {item.template_name}
@@ -103,7 +105,7 @@ export default function Options() {
                           {item.phone_number}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                          {new Date(item.date_sent)}
+                          {new Date(item.date_sent).toLocaleDateString()}
                         </td>
                       </tr>
                     ))}

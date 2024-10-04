@@ -28,7 +28,6 @@ DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost,summary-deer-centrally.ngrok-free.app').split(',')
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -44,9 +43,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -73,7 +72,11 @@ TEMPLATES = [
 ]
 
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000"
+]
 
 WSGI_APPLICATION = "whatsapp_back.wsgi.application"
 
@@ -174,3 +177,5 @@ CELERYD_PREFETCH_MULTIPLIER = 1
 
 # Max number of fields to allow uploads
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
+
+SECURE_SSL_REDIRECT = False

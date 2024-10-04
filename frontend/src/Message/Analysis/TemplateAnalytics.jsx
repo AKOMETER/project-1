@@ -172,12 +172,7 @@ function TemplateAnalytics() {
                   <div>Messages Sent : {analyticsdata.total_sent}</div>
                 </div>
               </Link>
-              <Link
-                to={{
-                  pathname: "/template/analytics/options",
-                  search: "?tab=delivered",
-                }}
-              >
+              <Link>
                 <div className="bg-white p-4 px-16 flex flex-col items-center justify-between gap-3 rounded-xl pt-16 plan-box w-[300px] ">
                   <span className=" text-center text-9xl text-[#205846] transition-all">
                     <RiMailUnreadLine />
@@ -187,12 +182,7 @@ function TemplateAnalytics() {
                   </div>
                 </div>
               </Link>
-              <Link
-                to={{
-                  pathname: "/template/analytics/options",
-                  search: "?tab=read",
-                }}
-              >
+              <Link>
                 <div className="bg-white p-4 px-16 flex flex-col items-center justify-between gap-3 rounded-xl pt-16 plan-box w-[300px] ">
                   <span className=" text-center text-9xl text-[#205846] transition-all">
                     <HiOutlineMailOpen />

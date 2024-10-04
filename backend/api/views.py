@@ -62,6 +62,12 @@ import pandas as pd
 from datetime import datetime
 from django.utils.dateparse import parse_date
 from django.db.models import Q
+from rest_framework import viewsets
+from rest_framework.parsers import MultiPartParser, FormParser
+from celery.result import AsyncResult
+from django.http import JsonResponse
+from django.shortcuts import render
+
 
 def read_file(file_path):
     file_name = file_path.name
@@ -1165,9 +1171,6 @@ def send_whatsapp_bulk_messages_images(request):
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
 
-
-from celery.result import AsyncResult
-from django.http import JsonResponse
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])  # Apply this if you want to restrict access
@@ -2642,15 +2645,9 @@ class BlogRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
         return []
 
 
-from django.shortcuts import render
-
-
 def custom_404(request, exception):
     return render(request, "404.html", status=404)
 
-
-from rest_framework import viewsets
-from rest_framework.parsers import MultiPartParser, FormParser
 
 
 class ContactGroupViewSet(generics.ListCreateAPIView):
@@ -2782,7 +2779,8 @@ def get_template_usage_from_facebook(request, template, status):
 
 
 @api_view(["GET"])
-def get_templates_log(request):
+@permission_classes([AllowAny])
+def get_log(request):
     # Get query parameters from the request
     template_name = request.GET.get('template_name', '')
     start_date = request.GET.get('start')
@@ -2795,8 +2793,11 @@ def get_templates_log(request):
     # Prepare the filter condition
     filter_conditions = Q()
     
+    # Filter by template_name if provided
     if template_name:
         filter_conditions &= Q(template_name=template_name)
+
+    # Filter by date range (start and end) if provided
     if start_date and end_date:
         filter_conditions &= Q(date_sent__date__range=[start_date, end_date])
     elif start_date:
@@ -2804,8 +2805,10 @@ def get_templates_log(request):
     elif end_date:
         filter_conditions &= Q(date_sent__date__lte=end_date)
 
+    print(filter_conditions)
     # Filter the MessageLog based on the conditions
-    message_logs = MessageLog.objects.filter(filter_conditions)
+    message_logs = MessageLog.objects.filter(filter_conditions).order_by('date_sent')
+
 
     # Create a list of dictionaries to return as JSON
     logs_data = list(

@@ -39,3 +39,8 @@ source venv/bin/activate
 7.  docker-compose up redis
 8.  docker-compose up db
 9.  docker-compose up --build
+
+# On Docker
+
+1.  #in the web-1 terminal
+    pip install mysql-connector-python

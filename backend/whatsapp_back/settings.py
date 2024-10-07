@@ -86,9 +86,9 @@ DATABASES = {
     "default": {
         "ENGINE": "mysql.connector.django",
         "NAME":  "altos",
-        "USER": "root",
-        "PASSWORD": "",
-        "HOST": "127.0.0.1",
+        "USER": "altos",
+        "PASSWORD": "altos",
+        "HOST": "project-1-db-1",
         "PORT": "3306",  # Strip spaces and cast to int
         "OPTIONS": {
             "autocommit": True,

@@ -21,6 +21,6 @@ COPY . /app/
 EXPOSE 8000
 
 # Run the command to start Gunicorn, serving the Django application
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "whatsapp_back.wsgi:application"]
+#CMD ["gunicorn", "--bind", "0.0.0.0:8000", "whatsapp_back.wsgi:application"]
 
-# CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]

@@ -4,8 +4,10 @@ FROM node:18
 # Set the working directory in the container
 WORKDIR /app
 
-# Copy package.json and install dependencies
-COPY package.json package-lock.json ./
+# Copy package.json and package-lock.json
+COPY package.json ./
+
+# Install dependencies with extended timeout
 RUN npm install
 
 # Copy the rest of the frontend source code to the container
@@ -18,4 +20,4 @@ RUN npm run build
 EXPOSE 3000
 
 # Serve the React app using a simple server
-CMD ["npm", "start"]
+CMD ["npm", "run", "start"]

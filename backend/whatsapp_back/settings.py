@@ -26,7 +26,7 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', "django-insecure-ynr1znbi4l^2(zes)$$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost,summary-deer-centrally.ngrok-free.app').split(',')
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'summary-deer-centrally.ngrok-free.app']
 
 # Application definition
 
@@ -84,7 +84,7 @@ WSGI_APPLICATION = "whatsapp_back.wsgi.application"
 # Using environment variables for database configuration.
 DATABASES = {
     "default": {
-        "ENGINE": "mysql.connector.django",
+        "ENGINE": "django.db.backends.mysql",
         "NAME":  "altos",
         "USER": "altos",
         "PASSWORD": "altos",
@@ -161,8 +161,8 @@ EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 
 # Celery Configuration
-CELERY_BROKER_URL = "redis://127.0.0.1:6379"
-CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379"
+CELERY_BROKER_URL = "redis://project-1-redis-1:6379/0"
+CELERY_RESULT_BACKEND = "redis://project-1-redis-1:6379/0"
 CELERY_BROKER_CONNECTION_RETRY = True
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 CELERY_BROKER_CONNECTION_RETRY_MAX_RETRIES = 5
